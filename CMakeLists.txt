@@ -3,6 +3,7 @@
 ####################################
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5.2 FATAL_ERROR)
+#SET(BUILD_SHARED_LIBS ON)
 
 # Set cmake policy by version: https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -12,9 +13,9 @@ else()
 endif()
 
 # Define project
-project(ALF
+project(LLA
   VERSION 0.0.1
-  DESCRIPTION "O2 LLA"
+  DESCRIPTION "O2 LLA library"
   LANGUAGES CXX
 )
 
@@ -30,6 +31,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Set CMAKE_INSTALL_LIBDIR explicitly to lib (to avoid lib64 on CC7)
 set(CMAKE_INSTALL_LIBDIR lib)
 
+# Used only for debugging
+#set(CMAKE_BUILD_TYPE "Debug")
+
 # Set the default build type to "RelWithDebInfo"
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE "RelWithDebInfo"
@@ -39,7 +43,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   )
 endif()
 
-
 ####################################
 # Dependencies
 ####################################
@@ -48,23 +51,31 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
-find_package(DIM REQUIRED)
+find_package(ReadoutCard REQUIRED)
+find_package(Boost 1.5.6
+  COMPONENTS
+  unit_test_framework
+  REQUIRED
+)
 
 ####################################
 # Module, library and executable definition
 ####################################
 
-add_library(LLA OBJECT
-  src/Lla.cxx
-  src/DimServices/DimServices.cxx
-  src/DimServices/ServiceNames.cxx
+add_library(LLA SHARED #TODO: Should some of these be private?
+  src/InterprocessLockBase.cxx
+  src/InterprocessLockFactory.cxx
+  src/NamedMutex.cxx
+  src/LockParameters.cxx
+  src/Session.cxx
+  src/SessionParameters.cxx
+  src/SocketLock.cxx
 )
 
 target_include_directories(LLA
   PUBLIC
-    ${Common_INCLUDE_DIRS}
-    ${InfoLogger_INCLUDE_DIRS}
-    ${ReadoutCard_INCLUDE_DIRS}
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
@@ -74,43 +85,81 @@ target_link_libraries(LLA
   PUBLIC
     AliceO2::Common
     AliceO2::InfoLogger
-    dim::dim
 )
+
+set_target_properties(LLA
+  PROPERTIES
+  OUTPUT_NAME
+    O2Lla # Adhere to O2 naming conventions
+)
+
+## Used for debugging purposes to expose more options for benchmarking
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_compile_definitions(
+    O2_LLA_BENCH_ENABLED
+  )
+endif()
+
 
 # Use C++17
 target_compile_features(LLA PUBLIC cxx_std_17)
 
+####################################
+# Tests
+####################################
+
+enable_testing()
+set(TEST_SRCS
+  test/TestLock.cxx
+  test/TestSession.cxx
+)
+
+foreach (test ${TEST_SRCS})
+  include_directories(src)
+  get_filename_component(test_name ${test} NAME)
+  string(REGEX REPLACE ".cxx" "" test_name ${test_name})
+
+  add_executable(${test_name} ${test})
+  target_link_libraries(${test_name}
+    PRIVATE
+      LLA
+      Boost::unit_test_framework
+  )
+  add_test(NAME ${test_name} COMMAND ${test_name})
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 15) # TODO: WHAT IS THIS?
+endforeach()
 
 ####################################
 # Executables
 ####################################
 
-#set(EXE_SRCS
-#  Lla.cxx
-#  LlaClient.cxx
-#)
-#
-#set(EXE_NAMES
-#  o2-lla
-#  o2-lla-client
-#)
-#
-#list(LENGTH EXE_SRCS count)
-#math(EXPR count "${count}-1")
-#foreach(i RANGE ${count})
-#  list(GET EXE_SRCS ${i} src)
-#  list(GET EXE_NAMES ${i} name)
-#  add_executable(${name} apps/${src})
-#  target_include_directories(${name}
-#    PRIVATE
-#      ${CMAKE_CURRENT_SOURCE_DIR}/src
-#  )
-#  target_link_libraries(${name}
-#    PRIVATE
-#      LLA
-#  )
-#endforeach()
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(EXE_SRCS
+    LlaBench.cxx
+    )
 
+  set(EXE_NAMES
+    o2-lla-bench
+  )
+
+  list(LENGTH EXE_SRCS count)
+  math(EXPR count "${count}-1")
+  foreach(i RANGE ${count})
+    list(GET EXE_SRCS ${i} src)
+    list(GET EXE_NAMES ${i} name)
+    add_executable(${name} apps/${src})
+    target_include_directories(${name}
+      PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    )
+    target_link_libraries(${name}
+      PRIVATE
+        LLA
+        AliceO2::ReadoutCard
+    )
+  endforeach()
+
+endif()
 
 ####################################
 # Install
@@ -131,28 +180,29 @@ endif()
 unset(isSystemDir)
 
 # Install library and executables
-#install(TARGETS ALF ${EXE_NAMES}
-install(TARGETS LLA
-  EXPORT ALFTargets
+install(TARGETS LLA ${EXE_NAMES}
+  EXPORT LLATargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # Create version file
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/cmake/ALFConfigVersion.cmake"
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/cmake/LLAConfigVersion.cmake"
   VERSION ${PACKAGE_VERSION}
   COMPATIBILITY AnyNewerVersion
 )
 
-# Install headers # NO PUBLIC HEADERS
-# install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ALF DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+# Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Lla DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # Export targets
 install(EXPORT LLATargets
   FILE
     LLATargets.cmake
   NAMESPACE
-    AliceO2::
+    o2::
   DESTINATION
     ${CMAKE_INSTALL_LIBDIR}/cmake/LLA
 )

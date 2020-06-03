@@ -1,6 +1,6 @@
 @PACKAGE_INIT@
 
-get_filename_component(ALF_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(LLA_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include(CMakeFindDependencyMacro)
 
 set(Common_CMAKE_DIR @Common_DIR@)
@@ -30,8 +30,8 @@ find_dependency(InfoLogger CONFIG HINTS ${InfoLogger_CMAKE_DIR})
 #  REQUIRED
 #)
 
-if(NOT TARGET AliceO2::ALF)
-  include("${ALF_CMAKE_DIR}/ALFTargets.cmake")
+if(NOT TARGET o2::LLA)
+  include("${LLA_CMAKE_DIR}/LLATargets.cmake")
 endif()
 
-message(STATUS "ALF ${ALF_VERSION} found")
+message(STATUS "LLA ${LLA_VERSION} found")
