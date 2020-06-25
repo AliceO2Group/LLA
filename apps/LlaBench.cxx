@@ -65,6 +65,12 @@ class LlaBench : public AliceO2::Common::Program
     options.add_options()("lock-type",
                           po::value<std::string>(&mOptions.lockTypeString)->default_value("socket-lock"),
                           "Type of lock to use ['socket-lock','named-mutex']");
+    options.add_options()("simple-critical",
+                          po::bool_switch(&mOptions.simpleCritical)->default_value(false),
+                          "Enables simple critical section instead of SWT");
+    options.add_options()("operations",
+                          po::value<int>(&mOptions.operations)->default_value(1),
+                          "Number of SWT operations within critical section");
   }
 
   virtual void run(const po::variables_map&) override
@@ -80,7 +86,6 @@ class LlaBench : public AliceO2::Common::Program
 
     std::cout << "Running Low-Level Arbitration Benchmarking program" << std::endl;
 
-    simpleCritical = false;
     std::cout << "-------------------------------------------------" << std::endl;
     std::cout << "================== SOCKET LOCK ==================" << std::endl;
     std::cout << "-------------------------------------------------" << std::endl;
@@ -92,7 +97,7 @@ class LlaBench : public AliceO2::Common::Program
     std::cout << "================== NAMED MUTEX ==================" << std::endl;
     std::cout << "-------------------------------------------------" << std::endl;
     lockType = LockType::Type::NamedMutex;
-    runBenchmark(std::bind(&LlaBench::lockingOverhead, this, 100));
+    runBenchmark(std::bind(&LlaBench::lockingOverhead, this, 100)); // TODO: Add program arguments for this
     std::cout << std::endl;
     runBenchmark(std::bind(&LlaBench::criticalSectionTimes, this));
     return;
@@ -129,21 +134,30 @@ class LlaBench : public AliceO2::Common::Program
       averageRaw += std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     }
 
+    float bitsPerCriticalSection = mOptions.simpleCritical ? 32.0 : (128 + 288.0 * mOptions.operations);
+    std::cout << bitsPerCriticalSection << std::endl;
+    int averageFineRawTime = averageFineRaw / times; // ns
+    int averageFineSessionTime = averageFineSession / times; //ns
+    float averageRawThroughput = bitsPerCriticalSection / averageFineRawTime * 1000; // Mbps
+    float averageSessionThroughput = bitsPerCriticalSection / averageFineSessionTime * 1000; // Mbps
+
     oneShot = false;
     std::cout << "-------------------------------------------------" << std::endl;
-    std::cout << "Raw Fine Total: " << averageFineRaw / times << "ns" << std::endl; //TODO: Is this total or average??
-    std::cout << "Session Fine Total: " << averageFineSession / times << "ns" << std::endl;
-    std::cout << "Diff Fine Total: " << averageFineSession / times - averageFineRaw / times << "ns" << std::endl;
+    std::cout << "Raw Fine Latency: " << averageFineRawTime << "ns" << std::endl;
+    std::cout << "Session Fine Latency: " << averageFineSessionTime << "ns" << std::endl;
+    std::cout << "Diff Fine Latency: " << averageFineSessionTime - averageFineRawTime << "ns" << std::endl;
+    std::cout << "Raw Throughput: " << averageRawThroughput << " Mbps" << std::endl;
+    std::cout << "Session Throughput: " << averageSessionThroughput << " Mbps" << std::endl;
     std::cout << "-------------------------------------------------" << std::endl;
-    std::cout << "Raw Coarse Average: " << averageRaw / times << "ms" << std::endl;
-    std::cout << "Session Coarse Average: " << averageSession / times << "ms" << std::endl;
-    std::cout << "Diff Coarse Average: " << averageSession / times - averageRaw / times << "ms" << std::endl;
-    /*    std::cout << "-------------------------------------------------" << std::endl;
-    std::cout << "RAW: # " << umap[-1] << std::endl;
+    std::cout << "Raw Coarse Latency: " << averageRaw / times << "ms" << std::endl;
+    std::cout << "Session Coarse Latency: " << averageSession / times << "ms" << std::endl;
+    std::cout << "Diff Coarse Latency: " << averageSession / times - averageRaw / times << "ms" << std::endl;
+    std::cout << "-------------------------------------------------" << std::endl;
+    /*std::cout << "RAW: # " << umap[-1] << std::endl;
     std::cout << "SESSION: # " << umap[42] << std::endl;
     std::cout << "DIFF: # " << umap[-1] - umap[42] << std::endl;
-    std::cout << "DIFF: " << (double)(umap[-1] - umap[42])/umap[-1] * 100 << " %" << std::endl;*/
-    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "DIFF: " << (double)(umap[-1] - umap[42])/umap[-1] * 100 << " %" << std::endl;
+    std::cout << "-------------------------------------------------" << std::endl;*/
   }
 
   void criticalSectionTimes()
@@ -166,7 +180,6 @@ class LlaBench : public AliceO2::Common::Program
       t.join();
     }
 
-    //TODO: Figure out a metric for thread distribution ->> stdev
     std::vector<int> times;
 
     int min = INT_MAX;
@@ -206,12 +219,13 @@ class LlaBench : public AliceO2::Common::Program
     std::cout << "STDEV: " << stdev << std::endl;
     std::cout << "-------------------------------------------------" << std::endl;
 
-    /*    std::cout << "tid | #times in critical section" << std::endl;
-    for (const auto& el : umap) {
-      std::cout << el.first << " " << el.second << std::endl;
-    }
+        std::cout << "tid | #times in critical section" << std::endl;
+    /*for (const auto& el : umap) {
+      //std::cout << el.first << " " << el.second << std::endl;
+      std::cout << el.second << std::endl;
+    }*/
     std::cout << "-------------------------------------------------" << std::endl;
-    std::cout << std::endl;*/
+    std::cout << std::endl;
   }
 
   long long runSession(int tid, std::unordered_map<int, double>& umap)
@@ -226,7 +240,7 @@ class LlaBench : public AliceO2::Common::Program
 
     std::string cardSequence("#" + std::to_string(mOptions.cardId)); // TODO: This needs to be polished
     std::shared_ptr<roc::BarInterface> bar0, bar2;
-    if (simpleCritical) {
+    if (mOptions.simpleCritical) {
       bar0 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 0);
     } else {
       bar2 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 2);
@@ -234,13 +248,13 @@ class LlaBench : public AliceO2::Common::Program
 
     while ((!timeExceeded() || runForever) && !isSigInt()) {
       start = std::chrono::high_resolution_clock::now();
-      if (session->timedStart(2000)) {
+      if (session->timedStart(20000)) {
         umap[tid]++;
 
-        if (simpleCritical) {
+        if (mOptions.simpleCritical) {
           criticalSimple(bar0, tid);
         } else {
-          criticalSwt(bar2);
+          criticalSwt(bar2, mOptions.operations);
         }
 
         session->stop();
@@ -263,14 +277,9 @@ class LlaBench : public AliceO2::Common::Program
     long long ret = 0;
     std::chrono::high_resolution_clock::time_point start, stop;
 
-    /*SessionParameters params = SessionParameters::makeParameters()
-      .setSessionName(mOptions.sessionName)
-      .setCardId(mOptions.cardId);
-    Session session = Session(params);*/
-
     std::string cardSequence("#" + std::to_string(mOptions.cardId));
     std::shared_ptr<roc::BarInterface> bar0, bar2;
-    if (simpleCritical) {
+    if (mOptions.simpleCritical) {
       bar0 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 0);
     } else {
       bar2 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 2);
@@ -280,10 +289,10 @@ class LlaBench : public AliceO2::Common::Program
       umap[-1]++;
       start = std::chrono::high_resolution_clock::now();
 
-      if (simpleCritical) {
+      if (mOptions.simpleCritical) {
         criticalSimple(bar0, 0x0badf00d);
       } else {
-        criticalSwt(bar2);
+        criticalSwt(bar2, mOptions.operations);
       }
 
       stop = std::chrono::high_resolution_clock::now();
@@ -303,27 +312,32 @@ class LlaBench : public AliceO2::Common::Program
     uint32_t rd = bar->readRegister(regIndex);
     if (rd != wr) {
       std::cerr << rd << " != " << wr << std::endl;
-      BOOST_THROW_EXCEPTION(LlaException() << ErrorInfo::Message("oh boy"));
+      BOOST_THROW_EXCEPTION(LlaException() << ErrorInfo::Message("Wrong Register value read"));
     }
   }
 
-  void criticalSwt(std::shared_ptr<roc::BarInterface> bar)
+  void criticalSwt(std::shared_ptr<roc::BarInterface> bar, int times = 1)
   {
     namespace sc_regs = roc::Cru::ScRegisters;
     uint32_t wrLow = 0xcafecafe;
     uint32_t wrMed = 0x0badf00d;
-    //    uint32_t wrHigh = 0xdeadbeef;
+    uint32_t wrHigh = 0x0000beef;
 
     bar->writeRegister(sc_regs::SC_LINK.index, 0);
 
     bar->writeRegister(sc_regs::SC_RESET.index, 0x1);
     bar->writeRegister(sc_regs::SC_RESET.index, 0x0);
 
-    //    bar->writeRegister(sc_regs::SWT_WR_WORD_H.index, wrHigh);
-    bar->writeRegister(sc_regs::SWT_WR_WORD_M.index, wrMed);
-    bar->writeRegister(sc_regs::SWT_WR_WORD_L.index, wrLow);
+    // 4 * 32 + 9 * 32 * operations
+    // 128 + 288 * operations
 
-    bar->readRegister(sc_regs::SWT_MON.index);
+    for (int i = 0; i < times; i ++) {
+      bar->writeRegister(sc_regs::SWT_WR_WORD_H.index, wrHigh);
+      bar->writeRegister(sc_regs::SWT_WR_WORD_M.index, wrMed);
+      bar->writeRegister(sc_regs::SWT_WR_WORD_L.index, wrLow);
+
+      bar->readRegister(sc_regs::SWT_MON.index);
+    }
 
     // ---
 
@@ -344,13 +358,13 @@ class LlaBench : public AliceO2::Common::Program
 
       uint32_t rdLow = bar->readRegister(sc_regs::SWT_RD_WORD_L.index);
       uint32_t rdMed = bar->readRegister(sc_regs::SWT_RD_WORD_M.index);
-      //uint32_t rdHigh = bar->readRegister(sc_regs::SWT_RD_WORD_H.index);
+      uint32_t rdHigh = bar->readRegister(sc_regs::SWT_RD_WORD_H.index);
 
-      if (rdLow != wrLow || rdMed != wrMed /*|| rdHigh != wrHigh*/) {
+      if (rdLow != wrLow || rdMed != wrMed || (rdHigh & 0xfff) != (wrHigh & 0xfff)) {
         std::cout << std::hex << rdLow << " " << wrLow << std::endl;
         std::cout << std::hex << rdMed << " " << wrMed << std::endl;
-        //std::cout << std::hex << rdHigh << " " << wrHigh << std::endl;
-        BOOST_THROW_EXCEPTION(LlaException() << ErrorInfo::Message("oh girl"));
+        std::cout << std::hex << rdHigh << " " << wrHigh << std::endl;
+        BOOST_THROW_EXCEPTION(LlaException() << ErrorInfo::Message("Wrong SWT word read"));
       }
     }
   }
@@ -361,16 +375,17 @@ class LlaBench : public AliceO2::Common::Program
   struct OptionsStruct {
     std::string sessionName = "";
     int cardId = -1;
-    int runtime = 1000;
+    int runtime = -1;
     bool noLocking = false;
     int threads = 1;
     std::string lockTypeString = "socket-lock";
+    bool simpleCritical = false;
+    int operations = 1; // Number of operations to run within a critical section
   } mOptions;
 
   bool runForever = false;
   bool oneShot = false;
   std::chrono::steady_clock::time_point startCounting;
-  bool simpleCritical = true;
 
   LockType::Type lockType = LockType::Type::SocketLock;
 };
