@@ -59,23 +59,41 @@ void Session::checkAndSetParameters()
 
 bool Session::start()
 {
-  if (mLock->tryLock()) {
-    return true;
+  if (!isStarted()) {
+    if (mLock->tryLock()) {
+      mIsStarted = true;
+      return true;
+    }
+    return false;
   }
-  return false;
+
+  return true;
 }
 
 bool Session::timedStart(int timeOut)
 {
-  if (mLock->timedLock(timeOut)) {
-    return true;
+  if (!isStarted()) {
+    if (mLock->timedLock(timeOut)) {
+      mIsStarted = true;
+      return true;
+    }
+    return false;
   }
-  return false;
+
+  return true;
 }
 
 void Session::stop()
 {
-  mLock->unlock();
+  if (isStarted()) {
+    mLock->unlock();
+    mIsStarted = false;
+  }
+}
+
+bool Session::isStarted()
+{
+  return mIsStarted;
 }
 
 void Session::makeLockName()

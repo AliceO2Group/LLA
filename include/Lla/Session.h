@@ -41,6 +41,7 @@ class Session
   bool start();
   bool timedStart(int timeOut);
   void stop();
+  bool isStarted();
 
  private:
   void checkAndSetParameters();
@@ -51,6 +52,7 @@ class Session
   std::unique_ptr<InterprocessLockInterface> mLock;
   SessionParameters mParams;
   LockParameters mLockParams;
+  bool mIsStarted = false;
 };
 
 } // namespace lla
