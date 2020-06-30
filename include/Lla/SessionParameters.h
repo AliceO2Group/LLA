@@ -26,6 +26,7 @@ namespace lla
 
 struct ParametersPimpl;
 
+/// Class holding Session Parameters
 class SessionParameters
 {
  public:
@@ -37,25 +38,72 @@ class SessionParameters
   SessionParameters& operator=(SessionParameters&& other);
 
   // Types for parameter values
+  
+  /// Type for the Session Name
   using SessionNameType = std::string;
+
+  /// Type for the CardId
   using CardIdType = int;
 
   // Setters
+  
+  /// Sets the SessionName parameter
+  ///
+  /// Required parameter.
+  /// 
+  /// \param value The value to set
+  /// \return Reference to this object for chaining calls
   auto setSessionName(SessionNameType value) -> SessionParameters&;
+  
+  /// Sets the CardId parameter
+  ///
+  /// Required parameter.
+  /// 
+  /// \param value The value to set
+  /// \return Reference to this object for chaining calls
+
   auto setCardId(CardIdType value) -> SessionParameters&;
 
   // Optional Getters
+
+  /// Gets the SessionName parameter
+  /// \return The value wrapped in optional if it is present, or empty optional otherwise
   auto getSessionName() const -> boost::optional<SessionNameType>;
+
+  /// Gets the CardId parameter
+  /// \return The value wrapped in optional if it is present, or empty optional otherwise
   auto getCardId() const -> boost::optional<CardIdType>;
 
   // Throwing Getters
+
+  /// Gets the SessionName parameter
+  /// \return The value
+  /// \throws o2::lla::ParameterException if not present
   auto getSessionNameRequired() const -> SessionNameType;
+
+  /// Gets the SessionName parameter
+  /// \return The value
+  /// \throws o2::lla::ParameterException if not present
   auto getCardIdRequired() const -> CardIdType;
 
+  /// Convenience function to make a SessionParameters object
+  /// \return The newly created SessionParameters object
   static SessionParameters makeParameters()
   {
     return SessionParameters();
   }
+
+  /// Convenience function to make a SessionParameters object with the required SessionName and CardId parameters
+  /// \param sessionName The SessionName parameter
+  /// \param cardId The CardId parameter
+  /// \return The newly created SessionParameters object
+  static SessionParameters makeParameters(SessionNameType sessionName, CardIdType cardId)
+  {
+    return SessionParameters()
+      .setSessionName(sessionName)
+      .setCardId(cardId);
+  }
+
 
  private:
   std::unique_ptr<ParametersPimpl> mPimpl;

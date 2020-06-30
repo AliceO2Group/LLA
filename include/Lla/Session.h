@@ -33,14 +33,30 @@ class Session
  public:
 #ifdef O2_LLA_BENCH_ENABLED
 #pragma message("O2_LLA_BENCH_ENABLED defined")
+  /// Session constructor only for debugging
+  /// \param params The Session parameters
+  /// \param lockType The type of the underlying lock implementation
   Session(SessionParameters& params, LockType::Type lockType);
 #endif
+  /// Session constructor
+  /// \param params The Session parameters
   Session(SessionParameters& params);
   ~Session();
 
+  /// Start a Session, within which atomic access to the card's SC interface is guaranteed
+  /// \return boolean; true if successful, otherwise False
   bool start();
+
+  /// Start a Session, trying until the timeOut has expired
+  /// \param timeOut Timeout in ms after which to stop trying to start the session
+  /// \return boolean; true if successful, otherwise false
   bool timedStart(int timeOut);
+
+  /// Stops a Session, releasing atomic access to the card's SC interface
   void stop();
+
+  /// Reports on the state of the Session
+  /// \return boolean; true if started, false otherwise
   bool isStarted();
 
  private:
