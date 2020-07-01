@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(TimeSocketLock)
     avg += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start - std::chrono::milliseconds(10)).count();
   }
 
-  std::cout << avg / i << std::endl;
+  //std::cout << avg / i << std::endl;
 
   BOOST_CHECK(true);
 }
@@ -150,10 +150,10 @@ BOOST_AUTO_TEST_CASE(UltraSocketLock)
     t.join();
   });
 
-  std::cout << "umap state" << std::endl;
+  //std::cout << "umap state" << std::endl;
 
   for (auto& el : umap) {
-    std::cout << el.first << " " << el.second << std::endl;
+    //std::cout << el.first << " " << el.second << std::endl;
     if (el.second < 1) {
       BOOST_CHECK(false);
     }
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(TimeNamedMutexLock)
     avg += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start - std::chrono::milliseconds(10)).count();
   }
 
-  std::cout << avg / i << std::endl;
+  //std::cout << avg / i << std::endl;
 
   BOOST_CHECK(true);
 }
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(UltraNamedMutexLock)
       const auto start = std::chrono::steady_clock::now();
       auto timeExceeded = [&]() { return ((std::chrono::steady_clock::now() - start) > std::chrono::seconds(2)); };
       while (!timeExceeded()) {
-        if (alock->timedLock(100)) {
+        if (alock->timedLock(300)) {
           umap[x]++;
           std::this_thread::sleep_for(std::chrono::milliseconds(10 * x + 2)); // critical section
           alock->unlock();
@@ -256,10 +256,10 @@ BOOST_AUTO_TEST_CASE(UltraNamedMutexLock)
     t.join();
   });
 
-  std::cout << "umap state" << std::endl;
+  //std::cout << "umap state" << std::endl;
 
   for (auto& el : umap) {
-    std::cout << el.first << " " << el.second << std::endl;
+    //std::cout << el.first << " " << el.second << std::endl;
     if (el.second < 1) {
       BOOST_CHECK(false);
     }

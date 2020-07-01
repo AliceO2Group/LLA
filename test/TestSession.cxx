@@ -28,11 +28,18 @@ using namespace o2::lla;
 
 BOOST_AUTO_TEST_SUITE(LowLevelArbitrationSession)
 
+BOOST_AUTO_TEST_CASE(SessionEasyCreate)
+{
+  SessionParameters params = SessionParameters::makeParameters("KSA", "#3");
+  Session session = Session(params);
+  BOOST_CHECK(true);
+}
+
 BOOST_AUTO_TEST_CASE(SessionCreate)
 {
   SessionParameters params = SessionParameters::makeParameters()
                                .setSessionName("KSA")
-                               .setCardId(3);
+                               .setCardId(std::string("#3"));
   Session session = Session(params);
   if (session.start()) {
     session.stop();
@@ -54,7 +61,7 @@ BOOST_AUTO_TEST_CASE(SessionCreateFailID)
 {
   SessionParameters params = SessionParameters::makeParameters()
                                .setSessionName("WILLFAIL")
-                               .setCardId(8);
+                               .setCardId(std::string("#8"));
   BOOST_CHECK_THROW(Session session = Session(params), ParameterException);
 }
 
@@ -62,7 +69,7 @@ BOOST_AUTO_TEST_CASE(TimedSessionCreate)
 {
   SessionParameters params = SessionParameters::makeParameters()
                                .setSessionName("WILLSUCCEED")
-                               .setCardId(2);
+                               .setCardId(std::string("#2"));
   Session session = Session(params);
   if (!session.timedStart(10)) {
     BOOST_CHECK(false);
@@ -74,9 +81,9 @@ BOOST_AUTO_TEST_CASE(TimedSessionsCreate)
 {
   SessionParameters params = SessionParameters::makeParameters()
                                .setSessionName("KSA")
-                               .setCardId(3);
+                               .setCardId(std::string("#3"));
   Session sessionA = Session(params);
-  params.setCardId(2);
+  params.setCardId(std::string("#2"));
   Session sessionB = Session(params);
   if (!sessionA.timedStart(10)) {
     BOOST_CHECK(false);
@@ -91,7 +98,7 @@ BOOST_AUTO_TEST_CASE(TimedSessionsCreateLocked)
 {
   SessionParameters params = SessionParameters::makeParameters()
                                .setSessionName("KSA")
-                               .setCardId(3);
+                               .setCardId(std::string("#3"));
   Session sessionA = Session(params);
   Session sessionB = Session(params);
   if (!sessionA.timedStart(10)) {
@@ -108,9 +115,9 @@ BOOST_AUTO_TEST_CASE(SessionsCreate)
 {
   SessionParameters params = SessionParameters::makeParameters()
                                .setSessionName("KSA")
-                               .setCardId(3);
+                               .setCardId(std::string("#3"));
   Session sessionA = Session(params);
-  params.setCardId(2);
+  params.setCardId(std::string("#2"));
   Session sessionB = Session(params);
   if (!sessionA.start()) {
     BOOST_CHECK(false);
@@ -125,7 +132,7 @@ BOOST_AUTO_TEST_CASE(SessionsCreateLocked)
 {
   SessionParameters params = SessionParameters::makeParameters()
                                .setSessionName("KSA")
-                               .setCardId(3);
+                               .setCardId(std::string("#3"));
   Session sessionA = Session(params);
   Session sessionB = Session(params);
   if (!sessionA.start()) {

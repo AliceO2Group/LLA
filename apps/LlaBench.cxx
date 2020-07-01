@@ -51,7 +51,7 @@ class LlaBench : public AliceO2::Common::Program
                           po::value<std::string>(&mOptions.sessionName)->default_value("##UNSET##"),
                           "The session name");
     options.add_options()("card-id",
-                          po::value<int>(&mOptions.cardId)->default_value(-1),
+                          po::value<std::string>(&mOptions.cardId)->default_value("#-1"),
                           "The card id");
     options.add_options()("runtime",
                           po::value<int>(&mOptions.runtime)->default_value(-1),
@@ -136,9 +136,9 @@ class LlaBench : public AliceO2::Common::Program
 
     float bitsPerCriticalSection = mOptions.simpleCritical ? 32.0 : (128 + 288.0 * mOptions.operations);
     std::cout << bitsPerCriticalSection << std::endl;
-    int averageFineRawTime = averageFineRaw / times; // ns
-    int averageFineSessionTime = averageFineSession / times; //ns
-    float averageRawThroughput = bitsPerCriticalSection / averageFineRawTime * 1000; // Mbps
+    int averageFineRawTime = averageFineRaw / times;                                         // ns
+    int averageFineSessionTime = averageFineSession / times;                                 //ns
+    float averageRawThroughput = bitsPerCriticalSection / averageFineRawTime * 1000;         // Mbps
     float averageSessionThroughput = bitsPerCriticalSection / averageFineSessionTime * 1000; // Mbps
 
     oneShot = false;
@@ -219,8 +219,8 @@ class LlaBench : public AliceO2::Common::Program
     std::cout << "STDEV: " << stdev << std::endl;
     std::cout << "-------------------------------------------------" << std::endl;
 
-        std::cout << "tid | #times in critical section" << std::endl;
-    /*for (const auto& el : umap) {
+    /*std::cout << "tid | #times in critical section" << std::endl;
+    for (const auto& el : umap) {
       //std::cout << el.first << " " << el.second << std::endl;
       std::cout << el.second << std::endl;
     }*/
@@ -238,12 +238,11 @@ class LlaBench : public AliceO2::Common::Program
                                  .setCardId(mOptions.cardId);
     std::unique_ptr<Session> session = std::make_unique<Session>(params, lockType); // Class constructor only availabe when O2_LLA_BENCH_ENABLED is defined
 
-    std::string cardSequence("#" + std::to_string(mOptions.cardId)); // TODO: This needs to be polished
     std::shared_ptr<roc::BarInterface> bar0, bar2;
     if (mOptions.simpleCritical) {
-      bar0 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 0);
+      bar0 = roc::ChannelFactory().getBar(roc::Parameters::cardIdFromString(mOptions.cardId), 0);
     } else {
-      bar2 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 2);
+      bar2 = roc::ChannelFactory().getBar(roc::Parameters::cardIdFromString(mOptions.cardId), 2);
     }
 
     while ((!timeExceeded() || runForever) && !isSigInt()) {
@@ -277,12 +276,11 @@ class LlaBench : public AliceO2::Common::Program
     long long ret = 0;
     std::chrono::high_resolution_clock::time_point start, stop;
 
-    std::string cardSequence("#" + std::to_string(mOptions.cardId));
     std::shared_ptr<roc::BarInterface> bar0, bar2;
     if (mOptions.simpleCritical) {
-      bar0 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 0);
+      bar0 = roc::ChannelFactory().getBar(roc::Parameters::cardIdFromString(mOptions.cardId), 0);
     } else {
-      bar2 = roc::ChannelFactory().getBar(roc::PciSequenceNumber(cardSequence), 2);
+      bar2 = roc::ChannelFactory().getBar(roc::Parameters::cardIdFromString(mOptions.cardId), 2);
     }
 
     while ((!timeExceeded() || runForever) && !isSigInt()) {
@@ -331,7 +329,7 @@ class LlaBench : public AliceO2::Common::Program
     // 4 * 32 + 9 * 32 * operations
     // 128 + 288 * operations
 
-    for (int i = 0; i < times; i ++) {
+    for (int i = 0; i < times; i++) {
       bar->writeRegister(sc_regs::SWT_WR_WORD_H.index, wrHigh);
       bar->writeRegister(sc_regs::SWT_WR_WORD_M.index, wrMed);
       bar->writeRegister(sc_regs::SWT_WR_WORD_L.index, wrLow);
@@ -374,7 +372,7 @@ class LlaBench : public AliceO2::Common::Program
 
   struct OptionsStruct {
     std::string sessionName = "";
-    int cardId = -1;
+    std::string cardId = "#-1";
     int runtime = -1;
     bool noLocking = false;
     int threads = 1;

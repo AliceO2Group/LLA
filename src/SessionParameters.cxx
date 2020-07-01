@@ -23,7 +23,7 @@ namespace o2
 namespace lla
 {
 
-using Variant = boost::variant<std::string, int>;
+using Variant = boost::variant<std::string, int, SessionParameters::CardIdType>;
 using KeyType = const char*;
 using Map = std::map<KeyType, Variant>;
 

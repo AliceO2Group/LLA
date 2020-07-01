@@ -19,10 +19,23 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
+#include "ReadoutCard/CardFinder.h"
+#include <ReadoutCard/Parameters.h>
+
+namespace roc = AliceO2::roc;
+
 namespace o2
 {
 namespace lla
 {
+
+class CardIdVisitor : public boost::static_visitor<int>
+{
+ public:
+  int operator()(const char* s) const { return roc::findCard(std::string(s)).sequenceId; };
+  int operator()(std::string s) const { return roc::findCard(s).sequenceId; };
+  int operator()(roc::Parameters::CardIdType cardId) const { return roc::findCard(cardId).sequenceId; };
+};
 
 struct ParametersPimpl;
 
@@ -38,27 +51,27 @@ class SessionParameters
   SessionParameters& operator=(SessionParameters&& other);
 
   // Types for parameter values
-  
+
   /// Type for the Session Name
   using SessionNameType = std::string;
 
   /// Type for the CardId
-  using CardIdType = int;
+  using CardIdType = boost::variant<const char*, std::string, roc::Parameters::CardIdType>;
 
   // Setters
-  
+
   /// Sets the SessionName parameter
   ///
   /// Required parameter.
-  /// 
+  ///
   /// \param value The value to set
   /// \return Reference to this object for chaining calls
   auto setSessionName(SessionNameType value) -> SessionParameters&;
-  
+
   /// Sets the CardId parameter
   ///
   /// Required parameter.
-  /// 
+  ///
   /// \param value The value to set
   /// \return Reference to this object for chaining calls
 
@@ -103,7 +116,6 @@ class SessionParameters
       .setSessionName(sessionName)
       .setCardId(cardId);
   }
-
 
  private:
   std::unique_ptr<ParametersPimpl> mPimpl;

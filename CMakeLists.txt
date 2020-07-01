@@ -99,6 +99,7 @@ target_link_libraries(LLA
   PUBLIC
     AliceO2::Common
     AliceO2::InfoLogger
+    AliceO2::ReadoutCard
     $<$<BOOL:${Python2_FOUND}>:Boost::python27>
     $<$<BOOL:${Python2_FOUND}>:Python2::Python>
     $<$<BOOL:${Python3_FOUND}>:Boost::python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}>

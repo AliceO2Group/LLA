@@ -13,6 +13,8 @@
 ///
 /// \author Kostas Alexopoulos (kostas.alexopoulos@cern.ch)
 
+#include "ReadoutCard/Exception.h"
+
 #include "Lla/Exception.h"
 #include "Lla/Session.h"
 
@@ -51,9 +53,11 @@ Session::~Session()
 void Session::checkAndSetParameters()
 {
   mSessionName = mParams.getSessionNameRequired();
-  mCardId = mParams.getCardIdRequired();
-  if (mCardId < 0 || mCardId > 5) {
-    BOOST_THROW_EXCEPTION(ParameterException() << ErrorInfo::Message("Card ID " + std::to_string(mCardId) + " out of bounds"));
+
+  try {
+    mCardId = boost::apply_visitor(CrdIdVisitor(), mParams.getCardIdRequired());
+  } catch (const roc::Exception& e) {
+    BOOST_THROW_EXCEPTION(ParameterException() << ErrorInfo::Message(e.what()));
   }
 }
 
