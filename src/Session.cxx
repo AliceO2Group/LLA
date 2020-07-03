@@ -55,7 +55,7 @@ void Session::checkAndSetParameters()
   mSessionName = mParams.getSessionNameRequired();
 
   try {
-    mCardId = boost::apply_visitor(CrdIdVisitor(), mParams.getCardIdRequired());
+    mCardId = boost::apply_visitor(CardIdVisitor(), mParams.getCardIdRequired());
   } catch (const roc::Exception& e) {
     BOOST_THROW_EXCEPTION(ParameterException() << ErrorInfo::Message(e.what()));
   }

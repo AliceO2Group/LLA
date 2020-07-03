@@ -58,7 +58,8 @@ namespace lla = o2::lla;
 class Session
 {
  public:
-  Session(std::string sessionName, int cardId)
+  // TODO: Update the interface wrt the card id here
+  Session(std::string sessionName, std::string cardId)
   {
     lla::SessionParameters params = lla::SessionParameters::makeParameters()
                                       .setSessionName(sessionName)
@@ -90,7 +91,7 @@ BOOST_PYTHON_MODULE(libO2Lla)
 {
   using namespace boost::python;
 
-  class_<Session>("Session", init<std::string, int>(sSessionDocString))
+  class_<Session>("Session", init<std::string, std::string>(sSessionDocString))
     .def("start", &Session::start, sStartDocString)
     .def("timed_start", &Session::timedStart, sTimedStartDocString)
     .def("stop", &Session::stop, sStopDocString);

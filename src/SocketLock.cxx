@@ -52,7 +52,7 @@ void SocketLock::lock()
   //  getLogger() << __func__ << endm;
 
   if (!mLocked) {
-    if ((mSocketFd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) { // TODO: Don't reopen if already open?
+    if ((mSocketFd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
       BOOST_THROW_EXCEPTION(LlaException() << ErrorInfo::Message("Couldn't create abstract socket fd for InterprocessLock"));
     }
 
