@@ -155,10 +155,12 @@ endforeach()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(EXE_SRCS
     LlaBench.cxx
+    ../src/example.cxx
     )
 
   set(EXE_NAMES
     o2-lla-bench
+    lla-example
   )
 
   list(LENGTH EXE_SRCS count)
