@@ -41,6 +41,10 @@ class Session
   /// Session constructor
   /// \param params The Session parameters
   Session(SessionParameters& params);
+  Session(const Session& other);
+  Session(Session&& other);
+  Session& operator=(const Session& other);
+  Session& operator=(Session&& other);
   ~Session();
 
   /// Start a Session, within which atomic access to the card's SC interface is guaranteed
@@ -65,9 +69,9 @@ class Session
 
   std::string mSessionName;
   int mCardId;
-  std::unique_ptr<InterprocessLockInterface> mLock;
   SessionParameters mParams;
   LockParameters mLockParams;
+  std::unique_ptr<InterprocessLockInterface> mLock;
   bool mIsStarted = false;
 };
 

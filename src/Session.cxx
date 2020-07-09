@@ -46,6 +46,55 @@ Session::Session(SessionParameters& params)
   mLock = InterprocessLockFactory::getInterprocessLock(mLockParams);
 }
 
+Session::Session(const Session& other)
+{
+  mSessionName = other.mSessionName;
+  mCardId = other.mCardId;
+  mParams = other.mParams;
+  mLockParams = other.mLockParams;
+  mLock = InterprocessLockFactory::getInterprocessLock(mLockParams);
+  mIsStarted = false;
+}
+
+Session::Session(Session&& other)
+{
+  mSessionName = other.mSessionName;
+  mCardId = other.mCardId;
+  mParams = other.mParams;
+  mLockParams = other.mLockParams;
+  mLock = std::move(other.mLock);
+  mIsStarted = other.mIsStarted;
+}
+
+Session& Session::operator=(const Session& other)
+{
+  if (this == &other) {
+    return *this;
+  }
+
+  mSessionName = other.mSessionName;
+  mCardId = other.mCardId;
+  mParams = other.mParams;
+  mLockParams = other.mLockParams;
+  mLock = InterprocessLockFactory::getInterprocessLock(mLockParams);
+  mIsStarted = false;
+  return *this;
+}
+
+Session& Session::operator=(Session&& other)
+{
+  if (this == &other) {
+    return *this;
+  }
+  mSessionName = other.mSessionName;
+  mCardId = other.mCardId;
+  mParams = other.mParams;
+  mLockParams = other.mLockParams;
+  mLock = std::move(mLock);
+  mIsStarted = other.mIsStarted;
+  return *this;
+}
+
 Session::~Session()
 {
 }
