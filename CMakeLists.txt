@@ -3,7 +3,7 @@
 ####################################
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5.2 FATAL_ERROR)
-#SET(BUILD_SHARED_LIBS ON)
+SET(BUILD_SHARED_LIBS ON)
 
 # Set cmake policy by version: https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -14,7 +14,7 @@ endif()
 
 # Define project
 project(LLA
-  VERSION 0.0.1
+  VERSION 0.0.2
   DESCRIPTION "O2 LLA library"
   LANGUAGES CXX
 )
@@ -32,7 +32,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR lib)
 
 # Used only for debugging
-#set(CMAKE_BUILD_TYPE "Debug")
+# set(CMAKE_BUILD_TYPE "Debug")
 
 # Set the default build type to "RelWithDebInfo"
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -72,18 +72,18 @@ find_package(Boost 1.5.6
 # Module, library and executable definition
 ####################################
 
-add_library(LLA SHARED #TODO: Should some of these be private?
-  src/InterprocessLockBase.cxx
+add_library(LLA SHARED
   src/InterprocessLockFactory.cxx
-  src/NamedMutex.cxx
-  src/LockParameters.cxx
   src/Session.cxx
   src/SessionParameters.cxx
-  src/SocketLock.cxx
 )
 
 target_sources(LLA PRIVATE
   $<$<BOOL:${Python2_FOUND} OR ${Python3_FOUND}>:src/PythonInterface.cxx>
+  src/InterprocessLockBase.cxx
+  src/NamedMutex.cxx
+  src/LockParameters.cxx
+  src/SocketLock.cxx
 )
 
 target_include_directories(LLA
@@ -100,6 +100,7 @@ target_link_libraries(LLA
     AliceO2::Common
     AliceO2::InfoLogger
     AliceO2::ReadoutCard
+  PRIVATE
     $<$<BOOL:${Python2_FOUND}>:Boost::python27>
     $<$<BOOL:${Python2_FOUND}>:Python2::Python>
     $<$<BOOL:${Python3_FOUND}>:Boost::python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}>
@@ -176,7 +177,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_link_libraries(${name}
       PRIVATE
         LLA
-        AliceO2::ReadoutCard
     )
   endforeach()
 
