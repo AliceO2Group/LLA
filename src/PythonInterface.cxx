@@ -58,7 +58,6 @@ namespace lla = o2::lla;
 class Session
 {
  public:
-  // TODO: Update the interface wrt the card id here
   Session(std::string sessionName, std::string cardId)
   {
     lla::SessionParameters params = lla::SessionParameters::makeParameters()

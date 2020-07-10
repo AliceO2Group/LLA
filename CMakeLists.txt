@@ -94,12 +94,17 @@ target_include_directories(LLA
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+set(LINK_LIBS
+  AliceO2::ReadoutCard
+  AliceO2::InfoLogger
+  AliceO2::Common
+  Boost::boost
+)
+
 # Link targets
 target_link_libraries(LLA
   PUBLIC
-    AliceO2::Common
-    AliceO2::InfoLogger
-    AliceO2::ReadoutCard
+    ${LINK_LIBS}
   PRIVATE
     $<$<BOOL:${Python2_FOUND}>:Boost::python27>
     $<$<BOOL:${Python2_FOUND}>:Python2::Python>
