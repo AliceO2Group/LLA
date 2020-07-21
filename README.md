@@ -53,18 +53,18 @@ More information on the API can be found in the header files doxygen docs, for t
 
 ## Using LLA
 ### C++
-To use the LLA library, the `"Lla/Lla.h"` convenience header may be used, as seen in the [example](src/example.cxx). To build against the LLA library it is necessary to load the alisw environment (`aliswmod enter LLA`) and run the following g++ command:
+To use the LLA library, the `"Lla/Lla.h"` convenience header may be used, as seen in the [example](src/example.cxx). To build against the LLA library it is necessary to load the alisw environment (`aliswmod enter LLA`) and run the following g++ command. Make sure to adjust the versions according to `aliswmod list` output, when the environment is loaded.
 
 ```
-g++ -v -Wall \
-  -I ../sw/slc7_x86-64/LLA/latest/include \
-  -I ../sw/slc7_x86-64/Common-O2/latest/include/ \
-  -I ../sw/slc7_x86-64/ReadoutCard/latest/include \
-  -I ../sw/slc7_x86-64/libInfoLogger/latest/include/ \
-  -I ../sw/slc7_x86-64/boost/latest/include/ \
+g++ -Wall \
+  -I /opt/alisw/el7/LLA/v0.1.0-1/include \
+  -I /opt/alisw/el7/Common-O2/v1.4.9-27/include/ \
+  -I /opt/alisw/el7/ReadoutCard/v0.21.3-1/include \
+  -I /opt/alisw/el7/libInfoLogger/1.3.9-28/include/ \
+  -I /opt/alisw/el7/boost/v1.72.0-alice1-36/include/ \
   -lO2Lla \
-  -L ../sw/slc7_x86-64/LLA/latest/lib \
-  example.cxx -o example
+  -L /opt/alisw/el7/LLA/v0.1.0-1/lib \
+  lla-example.cxx -o llae
 ```
 
 ### Python
