@@ -119,6 +119,8 @@ class SessionParameters
 
  private:
   std::unique_ptr<ParametersPimpl> mPimpl;
+
+  static void disableInfoLogger();
 };
 
 } // namespace lla

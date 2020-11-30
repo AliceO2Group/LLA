@@ -90,16 +90,19 @@ _PARAMETER_FUNCTIONS(CardId, "card_id")
 
 SessionParameters::SessionParameters() : mPimpl(std::make_unique<ParametersPimpl>())
 {
+  SessionParameters::disableInfoLogger();
 }
 
 SessionParameters::SessionParameters(const SessionParameters& other)
 {
+  SessionParameters::disableInfoLogger();
   mPimpl = std::make_unique<ParametersPimpl>();
   mPimpl->map = other.mPimpl->map;
 }
 
 SessionParameters::SessionParameters(SessionParameters&& other)
 {
+  SessionParameters::disableInfoLogger();
   mPimpl = std::move(other.mPimpl);
 }
 
@@ -128,6 +131,11 @@ SessionParameters& SessionParameters::operator=(SessionParameters&& other)
 
   mPimpl = std::move(other.mPimpl);
   return *this;
+}
+
+void SessionParameters::disableInfoLogger()
+{
+  setenv("INFOLOGGER_MODE", "stdout", true);
 }
 
 } // namespace lla
