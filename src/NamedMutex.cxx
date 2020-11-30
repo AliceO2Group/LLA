@@ -19,7 +19,7 @@
 #include <boost/throw_exception.hpp>
 
 #include "Lla/Exception.h"
-#include "Logger.h"
+//#include "Logger.h"
 #include "NamedMutex.h"
 
 namespace o2
