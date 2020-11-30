@@ -19,7 +19,7 @@
 #include "Lla/Session.h"
 
 #include "InterprocessLockFactory.h"
-#include "Logger.h"
+//#include "Logger.h"
 
 namespace o2
 {

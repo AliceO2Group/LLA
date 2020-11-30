@@ -19,7 +19,7 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
-#include "ReadoutCard/CardFinder.h"
+#include <ReadoutCard/CardFinder.h>
 #include <ReadoutCard/Parameters.h>
 
 namespace roc = AliceO2::roc;
