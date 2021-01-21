@@ -59,7 +59,6 @@ else()
 endif()
 
 find_package(Common REQUIRED)
-find_package(InfoLogger REQUIRED)
 find_package(ReadoutCard REQUIRED)
 find_package(Boost 1.5.6
   COMPONENTS
@@ -96,7 +95,6 @@ target_include_directories(LLA
 
 set(LINK_LIBS
   AliceO2::ReadoutCard
-  AliceO2::InfoLogger
   AliceO2::Common
   Boost::boost
 )

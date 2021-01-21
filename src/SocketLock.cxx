@@ -19,7 +19,6 @@
 #include <boost/throw_exception.hpp>
 
 #include "Lla/Exception.h"
-//#include "Logger.h"
 #include "SocketLock.h"
 
 namespace o2
@@ -30,8 +29,6 @@ namespace lla
 SocketLock::SocketLock(const LockParameters& params)
   : InterprocessLockBase(params)
 {
-  //  getLogger() << __func__ << " : " << mLockName << endm;
-
   memset(&mServerAddress, 0, sizeof(mServerAddress));
   mServerAddress.sun_family = AF_UNIX;
 
@@ -43,14 +40,11 @@ SocketLock::SocketLock(const LockParameters& params)
 
 SocketLock::~SocketLock()
 {
-  //  getLogger() << __func__ << endm;
   unlock();
 }
 
 void SocketLock::lock()
 {
-  //  getLogger() << __func__ << endm;
-
   if (!mLocked) {
     if ((mSocketFd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
       BOOST_THROW_EXCEPTION(LlaException() << ErrorInfo::Message("Couldn't create abstract socket fd for InterprocessLock"));
@@ -75,7 +69,6 @@ bool SocketLock::tryLock()
     lock();
     return true;
   } catch (const LlaException& e) {
-    //    getWarningLogger() << boost::diagnostic_information(e) << endm;
   }
   return false;
 }
@@ -96,7 +89,6 @@ bool SocketLock::timedLock(int timeOut)
 
 void SocketLock::unlock()
 {
-  //  getLogger() << __func__ << endm;
   if (mLocked && fcntl(mSocketFd, F_GETFD) != -1) { // Close the socket fd in case it is still open
     close(mSocketFd);
     mLocked = false;

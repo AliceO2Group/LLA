@@ -19,7 +19,6 @@
 #include "Lla/Session.h"
 
 #include "InterprocessLockFactory.h"
-//#include "Logger.h"
 
 namespace o2
 {
@@ -30,7 +29,6 @@ namespace lla
 #pragma message("O2_LLA_BENCH_ENABLED defined")
 Session::Session(SessionParameters& params, LockType::Type lockType)
 {
-  Session::disableInfoLogger();
   mParams = SessionParameters(params);
   checkAndSetParameters();
   makeLockName();
@@ -41,7 +39,6 @@ Session::Session(SessionParameters& params, LockType::Type lockType)
 
 Session::Session(SessionParameters& params)
 {
-  Session::disableInfoLogger();
   mParams = SessionParameters(params);
   checkAndSetParameters();
   makeLockName();
@@ -50,7 +47,6 @@ Session::Session(SessionParameters& params)
 
 Session::Session(const Session& other)
 {
-  Session::disableInfoLogger();
   mSessionName = other.mSessionName;
   mCardId = other.mCardId;
   mParams = other.mParams;
@@ -61,7 +57,6 @@ Session::Session(const Session& other)
 
 Session::Session(Session&& other)
 {
-  Session::disableInfoLogger();
   mSessionName = other.mSessionName;
   mCardId = other.mCardId;
   mParams = other.mParams;
@@ -159,11 +154,6 @@ void Session::makeLockName()
   ss << "_CRU" << mCardId << "_lla_lock";
   mLockParams = LockParameters::makeParameters()
                   .setLockName(ss.str());
-}
-
-void Session::disableInfoLogger()
-{
-  setenv("INFOLOGGER_MODE", "stdout", true);
 }
 
 } // namespace lla
