@@ -19,7 +19,6 @@
 #include <boost/throw_exception.hpp>
 
 #include "Lla/Exception.h"
-//#include "Logger.h"
 #include "NamedMutex.h"
 
 namespace o2
@@ -31,18 +30,15 @@ NamedMutex::NamedMutex(const LockParameters& params)
   : InterprocessLockBase(params),
     mMutex(bip::open_or_create, mLockName.c_str())
 {
-  //  getLogger() << __func__ << " : " << mLockName << endm;
 }
 
 NamedMutex::~NamedMutex()
 {
-  //  getLogger() << __func__ << endm;
   unlock();
 }
 
 void NamedMutex::lock()
 {
-  //  getLogger() << __func__ << endm;
   if (!mLocked) {
     try {
       if (mMutex.try_lock()) {
@@ -62,7 +58,6 @@ bool NamedMutex::tryLock()
     lock();
     return true;
   } catch (const LlaException& e) {
-    //    getWarningLogger() << boost::diagnostic_information(e) << endm;
   }
   return false;
 }
@@ -83,9 +78,7 @@ bool NamedMutex::timedLock(int timeOut)
 
 void NamedMutex::unlock()
 {
-  //  getLogger() << __func__ << endm;
   if (mLocked) {
-    //    getLogger() << "true " << __func__ << endm;
     mMutex.unlock();
     mLocked = false;
   }

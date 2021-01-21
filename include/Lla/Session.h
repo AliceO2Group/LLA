@@ -73,8 +73,6 @@ class Session
   LockParameters mLockParams;
   std::unique_ptr<InterprocessLockInterface> mLock;
   bool mIsStarted = false;
-
-  static void disableInfoLogger();
 };
 
 } // namespace lla

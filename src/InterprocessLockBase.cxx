@@ -15,18 +15,14 @@
 
 #include <chrono>
 #include <thread>
-//#include "InfoLogger/InfoLogger.hxx"
 
 #include "InterprocessLockBase.h"
-//#include "Logger.h"
 #include "Lla/Exception.h"
 
 namespace o2
 {
 namespace lla
 {
-
-//AliceO2::InfoLogger::InfoLogger logger; //TODO: Could be extern
 
 InterprocessLockBase::InterprocessLockBase(const LockParameters& params)
   : mLockName(params.getLockName().get_value_or("dummy"))

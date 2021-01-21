@@ -60,7 +60,6 @@ g++ -Wall \
   -I /opt/alisw/el7/LLA/v0.1.0-1/include \
   -I /opt/alisw/el7/Common-O2/v1.4.9-27/include/ \
   -I /opt/alisw/el7/ReadoutCard/v0.21.3-1/include \
-  -I /opt/alisw/el7/libInfoLogger/1.3.9-28/include/ \
   -I /opt/alisw/el7/boost/v1.72.0-alice1-36/include/ \
   -lO2Lla \
   -L /opt/alisw/el7/LLA/v0.1.0-1/lib \
