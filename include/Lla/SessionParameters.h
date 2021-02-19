@@ -32,9 +32,9 @@ namespace lla
 class CardIdVisitor : public boost::static_visitor<int>
 {
  public:
-  int operator()(const char* s) const { return roc::findCard(std::string(s)).sequenceId; };
-  int operator()(std::string s) const { return roc::findCard(s).sequenceId; };
-  int operator()(roc::Parameters::CardIdType cardId) const { return roc::findCard(cardId).sequenceId; };
+  int operator()(const char* s) const { return roc::findCard(std::string(s)).serialId.getSerial(); };
+  int operator()(std::string s) const { return roc::findCard(s).serialId.getSerial(); };
+  int operator()(roc::Parameters::CardIdType cardId) const { return roc::findCard(cardId).serialId.getSerial(); };
 };
 
 struct ParametersPimpl;

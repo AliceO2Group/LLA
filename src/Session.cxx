@@ -151,7 +151,7 @@ bool Session::isStarted()
 void Session::makeLockName()
 {
   std::stringstream ss;
-  ss << "_CRU" << mCardId << "_lla_lock";
+  ss << "_CRU_" << mCardId << "_lla_lock";
   mLockParams = LockParameters::makeParameters()
                   .setLockName(ss.str());
 }
