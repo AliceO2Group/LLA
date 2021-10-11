@@ -94,8 +94,10 @@ Session& Session::operator=(Session&& other)
   return *this;
 }
 
+/* Make sure that the session is stopped, so the lock is released */
 Session::~Session()
 {
+  stop();
 }
 
 void Session::checkAndSetParameters()
