@@ -115,6 +115,10 @@ void Session::checkAndSetParameters()
 
 bool Session::start()
 {
+  // In case of start when mutex is kept, immediately return
+  std::unique_lock<std::mutex> ul(mMutex, std::try_to_lock);
+  if (!ul.owns_lock()) { return false; }
+
   if (!isStarted()) {
     if (mLock->tryLock()) {
       mIsStarted = true;
@@ -128,19 +132,33 @@ bool Session::start()
 
 bool Session::timedStart(int timeOut)
 {
-  if (!isStarted()) {
-    if (mLock->timedLock(timeOut)) {
-      mIsStarted = true;
+  // In case of timed start keep trying to take the mutex and start
+  const auto start = std::chrono::steady_clock::now();
+  auto timeExceeded = [&]() { return ((std::chrono::steady_clock::now() - start) > std::chrono::milliseconds(timeOut)); };
+
+  while (!timeExceeded()) {
+
+    std::unique_lock<std::mutex> ul(mMutex, std::try_to_lock);
+    if (!ul.owns_lock()) { continue; }
+
+    if (!isStarted()) {
+      if (mLock->tryLock()) {
+        mIsStarted = true;
+        return true;
+      }
+    } else {
       return true;
     }
-    return false;
   }
 
-  return true;
+  return false;
 }
 
 void Session::stop()
 {
+  // In case of stop, block until mutex acquired
+  std::unique_lock<std::mutex> ul(mMutex);
+  
   if (isStarted()) {
     mLock->unlock();
     mIsStarted = false;

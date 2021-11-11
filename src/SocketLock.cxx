@@ -71,6 +71,8 @@ bool SocketLock::tryLock()
     lock();
     return true;
   } catch (const LlaException& e) {
+    // DEBUG
+    //std::cerr << e.what() << std::endl;
   }
   return false;
 }
