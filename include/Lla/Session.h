@@ -23,6 +23,7 @@
 #include "Lla/LockParameters.h"
 
 #include <memory>
+#include <mutex>
 
 namespace o2
 {
@@ -75,6 +76,7 @@ class Session
   LockParameters mLockParams;
   std::unique_ptr<InterprocessLockInterface> mLock;
   bool mIsStarted = false;
+  std::mutex mMutex;
 };
 
 } // namespace lla
