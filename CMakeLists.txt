@@ -63,10 +63,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(Python3 3.6 COMPONENTS Interpreter Development)
 if (Python3_FOUND)
   set(boost_python_component "python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}")
-else()
-  message(WARNING "Python 3 was not found: falling back to Python 2")
-  find_package(Python2 2.7 COMPONENTS Development REQUIRED)
-  set(boost_python_component "python27")
 endif()
 
 find_package(Common REQUIRED)
@@ -89,7 +85,7 @@ add_library(LLA SHARED
 )
 
 target_sources(LLA PRIVATE
-  $<$<BOOL:${Python2_FOUND} OR ${Python3_FOUND}>:src/PythonInterface.cxx>
+  $<$<BOOL:${Python3_FOUND}>:src/PythonInterface.cxx>
   src/InterprocessLockBase.cxx
   src/NamedMutex.cxx
   src/LockParameters.cxx
@@ -115,8 +111,6 @@ target_link_libraries(LLA
   PUBLIC
     ${LINK_LIBS}
   PRIVATE
-    $<$<BOOL:${Python2_FOUND}>:Boost::python27>
-    $<$<BOOL:${Python2_FOUND}>:Python2::Python>
     $<$<BOOL:${Python3_FOUND}>:Boost::python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}>
     $<$<BOOL:${Python3_FOUND}>:Python3::Python>
 )
